@@ -4,24 +4,6 @@ quicksort [] = []
 quicksort (x:xs) = quicksort [i | i <- xs, i<=x] ++ [x] ++ quicksort [i | i <- xs, i>x]
 
 --------------- Q2 -------------------
--- uniq :: Eq a => [a] -> [a]
--- uniq [] = []
--- uniq x = getUnique (countUnique x [])
-
--- getUnique :: Eq a => [(a, Int)] -> [a]
--- getUnique [] = []
--- getUnique (x:xs)
---     | snd x== 1 = fst x: getUnique xs
---     | snd x/= 1 = getUnique xs
-
--- countUnique :: Eq a => [a] -> [(a, Int)] -> [(a, Int)]
--- countUnique x y = foldl (flip count) y x
-
--- count :: Eq a => a -> [(a, Int)] -> [(a, Int)]
--- count x [] = [(x, 1)]
--- count x (y:ys) 
---     | x==fst y = (fst y, snd y + 1):ys
---     | x/=fst y = y:count x ys
 uniq :: Eq a => [a] -> [a]
 uniq [] = []
 uniq [x] = [x]
@@ -32,15 +14,15 @@ neighbors :: (Ord a1, Ord a2, Num a1, Num a2) => a1 -> a2 -> [(a1, a2)]
 neighbors i j = [(k,l) | k <- [0,1,2,3,4,5,6,7,8,9], l <- [0,1,2,3,4,5,6,7,8,9], abs(i-k)<=1 && abs(j-l)<=1 && (i/=k || j/=l)]
 
 
---------------- Q4 ----------------------
+--------------- Q4 -------------------
 countWords :: String -> Int
 countWords s = sum (map (length . words) (lines s))
 
----------------- Q5 -----------------------
+---------------- Q5 ------------------
 composeMultiple :: [b -> b] -> b -> b
 composeMultiple y x = foldl (\x f -> f x) x (reverse y)
 
----------------- Q6 -----------------------
+---------------- Q6 ------------------
 data BinaryTree a = Nil | Node a (BinaryTree a) (BinaryTree a) deriving (Show, Eq)
 
 maptree :: (a->b) -> BinaryTree a -> BinaryTree b
