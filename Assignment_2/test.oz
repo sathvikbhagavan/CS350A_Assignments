@@ -1,6 +1,6 @@
 declare proc {PM A} 
     case A of nil then skip
-    [] var|ident(X)|Xs then {Browse Xs}
+    [] var|ident(_)|S then {Browse S}
     else {Browse 'Pattern Not Matching'}
     end
 end
@@ -24,3 +24,10 @@ end
 % [] [bind ident(X) Y]|T then
 %     {Unify ident(X) Y StackElement.e}
 %     SemStack := pair(s:T e:StackElement.e)|{Pop @SemStack}
+
+[var ident(X) S1]|S2 then
+            local NewEnv in 
+                {AdjoinAt SemStackElement.e X {AddKeyToSAS} NewEnv}
+                SemStack := pair(s:S1 e:NewEnv)|pair(s:S2 e:SemStackElement.e)|{Pop @SemStack}
+                {Interpreter SemStack}
+            end

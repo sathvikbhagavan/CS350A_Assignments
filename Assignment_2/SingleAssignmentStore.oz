@@ -2,7 +2,7 @@ declare SAS = {Dictionary.new}
 
 declare StoreCounter = {NewCell 0}
 
-fun {AddKey}
+fun {AddKeyToSAS}
     StoreCounter := @StoreCounter + 1
     {Dictionary.put SAS @StoreCounter equivalence(@StoreCounter)}
     @StoreCounter
