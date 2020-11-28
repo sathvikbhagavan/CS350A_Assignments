@@ -36,7 +36,6 @@ in
       [] ident(X) then {RetrieveFromSAS Env.X}
       else Exp end
    end
-
    %=================
    % Used when unifying records. Similar to SubstituteIdentifiers,
    % except that lists are not unified.
