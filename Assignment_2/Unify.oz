@@ -36,6 +36,7 @@ in
       [] ident(X) then {RetrieveFromSAS Env.X}
       else Exp end
    end
+
    %=================
    % Used when unifying records. Similar to SubstituteIdentifiers,
    % except that lists are not unified.
@@ -62,7 +63,7 @@ in
       if {List.member [Exp1 Exp2] UnificationsSoFar}
       then skip
       else
-	 Unifications = {List.append [Exp1 Exp2] UnificationsSoFar}
+	 Unifications = {List.append [[Exp1 Exp2]] UnificationsSoFar}
 	 case Exp1
 	 of equivalence(X) then
 	    case Exp2
@@ -103,8 +104,3 @@ in
    {UnifyRecursive {SubstituteIdentifiers Exp1 Env}
     {SubstituteIdentifiers Exp2 Env} nil}
 end
-
-
-
-
-
