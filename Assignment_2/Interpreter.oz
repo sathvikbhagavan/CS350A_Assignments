@@ -1,8 +1,8 @@
 \insert 'Unify.oz'
 \insert 'Stack.oz'
-% ---------------------------------
+% ------------------------------------
 % Authors : Sathvik Bhagavan - 170638
-% ---------------------------------
+% ------------------------------------
 % Semantic Stack is implemented as Cell. It is implemented as:
 %   pair(s:Statement e:Environment)
 
@@ -23,7 +23,7 @@ declare fun {AddPairs P E}
     end
 end
 
-declare fun {AddPatternVars P E} 
+declare fun {PatternVariables P E} 
     case P of [record literal(_) Pairs] then
         {AddPairs Pairs E}
     else E
@@ -31,7 +31,7 @@ declare fun {AddPatternVars P E}
 end
 
 
-% Computation of free variables
+% Computation of free variables and closure
 declare fun {CheckFreeVariables S E B F}
     case S of X|Xs then {CheckFreeVariables Xs E B {CheckFreeVariables X E B F}}
     [] ident(X) then 
@@ -48,34 +48,50 @@ declare fun {CheckFreeVariables S E B F}
     end
 end
 
-declare fun {CalcClosure S E B F}
+declare fun {ComputeClosure S E B F}
+
     case S of nil then F
     [] [nop] then F
-    [] [var ident(X) Xs] then {CalcClosure Xs E ident(X)|B F}
+    [] [var ident(X) Xs] then {ComputeClosure Xs E ident(X)|B F}
     [] [bind X Y] then {CheckFreeVariables X E B {CheckFreeVariables Y E B F}}
     [] [match ident(X) P S1 S2] then
-        if {List.member ident(X) B} then {CalcClosure S1 {AddPatternVars P E} B {CalcClosure S2 E B F}}
+
+        % X is bound case 
+        if {List.member ident(X) B} 
+        then {ComputeClosure S1 {PatternVariables P E} B {ComputeClosure S2 E B F}}
         else
-	        if {Value.hasFeature F X} then {CalcClosure S1 {AddPatternVars P E} B {CalcClosure S2 E B F}} 
+
+            % X is already computed to be a free variable
+	        if {Value.hasFeature F X} 
+            then {ComputeClosure S1 {PatternVariables P E} B {ComputeClosure S2 E B F}} 
 	        else
-	            if {Value.hasFeature E X} then {CalcClosure S1 {AddPatternVars P E} B {CalcClosure S2 E B {AdjoinAt F X E.X} } }
+
+                % X is in the environment - adding it to the free variables
+	            if {Value.hasFeature E X} 
+                then {ComputeClosure S1 {PatternVariables P E} B {ComputeClosure S2 E B {AdjoinAt F X E.X}}}
 	            else E
                 end
 	        end
 	    end
     [] [apply ident(X) P] then
+
+        % X is bound case 
         if {List.member ident(X) B} then {CheckFreeVariables P E B F}
         else
+
+            % X is already computed to be a free variable
 	        if {Value.hasFeature F X} then {CheckFreeVariables P E B F} 
 	        else
+
+                % X is in the environment - adding it to the free variables
 	            if {Value.hasFeature E X} then {CheckFreeVariables P E B {AdjoinAt F X E.X} }
 	            else E
 	            end
 	        end
         end
     [] X|Xs then 
-        case Xs of nil then {CalcClosure X E B F}
-        else {CalcClosure Xs E B {CalcClosure X E B F}}
+        case Xs of nil then {ComputeClosure X E B F}
+        else {ComputeClosure Xs E B {ComputeClosure X E B F}}
         end
     else E
     end
@@ -114,6 +130,7 @@ declare proc {BindArguementsFormal F A N E}
     end
 end
 
+% Check arrity of 2 records to be equal or not
 declare fun {CheckArity F G}
     case F of nil then 
         case G of nil then true
@@ -148,13 +165,15 @@ declare proc {Interpreter SemStack}
 
         % For other cases
         [] X|Xs then
+
             % Q.2 var statement
             case X of var|Y then
                 case Y of ident(A)|B then
                     case B of nil then skip
                     else 
                         local NewEnv in 
-                            % Adding 'A' to SAS and then adjoining it to the environment
+
+                            % Adding to SAS and then adjoining it to the environment
                             {AdjoinAt SemStackElement.e A {AddKeyToSAS} NewEnv}
                             SemStack := pair(s:B e:NewEnv)|pair(s:Xs e:SemStackElement.e)|{Pop @SemStack}
                             {Interpreter SemStack}
@@ -167,6 +186,7 @@ declare proc {Interpreter SemStack}
             [] bind|Y then
                 case Y of H|T|nil then
                     case H of ident(P) then
+
                         % Variable-Variable binding
                         case T of ident(_) then
                             try
@@ -206,7 +226,7 @@ declare proc {Interpreter SemStack}
                             local CE V Val in 
 
                                 % Computing contextual environment
-                                CE = {CalcClosure S.1 SemStackElement.e Is env}
+                                CE = {ComputeClosure S.1 SemStackElement.e Is env}
                                 V = [procedure Is S.1 CE]
                                 Val = {RetrieveFromSAS SemStackElement.e.P}
 
@@ -323,6 +343,7 @@ end
 
 % Test Cases for the Interpreter
 
+
 % {ParseAST [[nop] [nop] [nop]]}
 % {ParseAST [[nop]]}
 % {ParseAST [[nop]]}
@@ -335,10 +356,10 @@ end
 % {ParseAST [[var ident(x) [bind ident(x) [record literal(a) [[literal(1) literal(first)] [literal(2) literal(second)]]]] [match ident(x) [record literal(a) [[literal(1) literal(first)] [literal(2) literal(second)]]] [[nop]] [[nop] [nop]]]]]}
 % {ParseAST [[var ident(x) [bind ident(x) literal(a)] [var ident(y) [bind ident(x) [procedure [ident(a) ident(b)] [[bind ident(b) ident(a)]]]]]]]}
 
-{ParseAST [[var ident(b) [var ident(a) [var ident(x) [bind ident(x) 
-            [record literal(label) [[literal(f1) ident(a)] [literal(f2) ident(b)]]]]
-            [match ident(x) 
-            [record literal(label) [[literal(f1) ident(a)] [literal(f2) ident(b)]]] [[nop] [nop]] [[nop] [nop]]]]]]]}
+% {ParseAST [[var ident(b) [var ident(a) [var ident(x) [bind ident(x) 
+%             [record literal(label) [[literal(f1) ident(a)] [literal(f2) ident(b)]]]]
+%             [match ident(x) 
+%             [record literal(label) [[literal(f1) ident(a)] [literal(f2) ident(b)]]] [[nop] [nop]] [[nop] [nop]]]]]]]}
 
 
 % {ParseAST [[var ident(x) 
@@ -346,7 +367,9 @@ end
 % [var ident(z) [var ident(y) [apply ident(x) ident(y)]]]]]}
 
 {ParseAST [[var ident(y) [var ident(x) [bind ident(x) 
-[procedure nil [[nop] [bind ident(y) literal(a)]]]]
-[apply ident(x)]]]]}
+[procedure [ident(x1)] [[nop] [bind ident(x1) ident(y)] [bind ident(x1) literal(a)]]]]
+[apply ident(x) ident(y)]]]]}
 
+
+{Browse '--------------SAS--------------'}
 {Browse {Dictionary.entries SAS}}
