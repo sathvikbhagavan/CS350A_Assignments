@@ -1,0 +1,40 @@
+Monadic laws are: 
+
+1. return x >>= f = f x
+2. m >>= return = m
+3. (mx >>= f) >>= g  =  mx >>= (\x -> (f x >>= g)) 
+
+For List Monad:
+
+return :: a -> [a]
+(>>=) :: [a] -> (a -> [b]) -> [b]
+f :: a -> [b]
+
+1. return x >>= f = f x
+
+    return x >>= f
+    <=> [x] >>= f
+    <=> f(x) = f x
+
+
+2. mx >>= return = mx
+
+    [x] >>= return
+    <=> [x] 
+
+3. (mx >>= f) >>= g  =  mx >>= (\x -> (f x >>= g))
+
+    ([x] >>= f) >>= g
+    If f x = [y]
+    <=> [y] >>= g
+    <=> [z]
+
+    [x] >>= (\x -> (f x >>= g))
+    <=> (\x -> (f x >>= g))(x)
+    <=> (f x) >>= g
+    <=> [y] >>= g
+    <=> [z]
+
+    LHS and RHS are equivalent
+ 
+

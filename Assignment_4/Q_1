@@ -1,0 +1,55 @@
+Monadic laws are: 
+
+1. return x >>= f = f x
+2. m >>= return = m
+3. (mx >>= f) >>= g  =  mx >>= (\x -> (f x >>= g)) 
+
+
+For Maybe Monad :
+
+return :: a -> Maybe a
+(>>=) :: Maybe a -> (a -> Maybe b) -> Maybe b
+
+f :: a -> Maybe b
+
+1.  return x >>= f = f x
+
+    return x >>= f
+    <=>(Just x) >>= f
+    <=> f(x) = f x
+
+2.  (mx >>= return) <=> mx
+
+    if mx is (Just x) then
+        return x <=> Just(x)
+    if mx is Nothing then   
+        return x <=> Nothing
+
+
+3. (mx >>= f) >>= g = mx >>= (\x -> (f x >>= g)) 
+    
+    LHS:
+    if mx >>= f = (Just y) then         
+        (Just y) >>= g then g(y)
+    else 
+        Nothing
+
+    RHS:
+    if mx is (Just x) then 
+        (\z -> (f z >>= g)) (x)
+        = f x >>= g
+        = (Just y) >>= g
+        = g(y)
+    else
+        Nothing
+
+    Hence, LHS and RHS are equivalent
+    
+    Simplifying:
+    
+    if mx is (Just x) and f x is (Just y) then 
+        g(y)
+    else if mx is (Just x) and f x is Nothing then
+        Nothing
+    else 
+        Nothing

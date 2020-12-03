@@ -31,7 +31,7 @@ listLast [x] = x
 listLast (_:xs) = listLast xs 
 listLast [] = error "Can't do last of an empty list!"
 
-
+-- Function call to get the nth fibonacci number
 runFibSequence :: Int -> Int
 runFibSequence n 
     | n==0 = 0
@@ -41,6 +41,8 @@ runFibSequence n
 takeOnly :: (a, ([p], b, c)) -> p
 takeOnly (_, (l, _, _)) = listLast l
 
+
+-- Main function (interactive implementation)
 main :: IO ()
 main = do
     putStrLn "Which Fibonacci Number you want (Starting from 1)"
