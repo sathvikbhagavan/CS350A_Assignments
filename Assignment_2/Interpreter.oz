@@ -1,9 +1,10 @@
 \insert 'Unify.oz'
 \insert 'Stack.oz'
+
 % ------------------------------------
 % Authors : Sathvik Bhagavan - 170638
 % ------------------------------------
-% Semantic Stack is implemented as Cell. It is implemented as:
+% Semantic Stack is implemented as a Cell. It is implemented as:
 %   pair(s:Statement e:Environment)
 
 
@@ -169,6 +170,7 @@ declare proc {Interpreter SemStack}
             % Q.2 var statement
             case X of var|Y then
                 case Y of ident(A)|B then
+                    {Browse B}
                     case B of nil then skip
                     else 
                         local NewEnv in 
@@ -313,9 +315,7 @@ declare proc {Interpreter SemStack}
                             else 
                                 local NewEnv in 
                                     NewEnv = {AddFormalParameters Formal CE}
-                                    {Browse NewEnv}
                                     {BindArguementsFormal Formal Arguements NewEnv SemStackElement.e}
-                                    {Browse SemStackElement.e}
                                     SemStack := pair(s:S e:NewEnv)|{Pop @SemStack}
                                     {Interpreter SemStack}
                                 end
@@ -366,9 +366,11 @@ end
 % [bind ident(x) [procedure [ident(x1)] [[bind ident(x1) literal(a)]]]] 
 % [var ident(z) [var ident(y) [apply ident(x) ident(y)]]]]]}
 
-{ParseAST [[var ident(y) [var ident(x) [bind ident(x) 
-[procedure [ident(x1)] [[nop] [bind ident(x1) ident(y)] [bind ident(x1) literal(a)]]]]
-[apply ident(x) ident(y)]]]]}
+% {ParseAST [[var ident(y) [var ident(x) [bind ident(x) 
+% [procedure [ident(x1)] [[nop] [bind ident(x1) ident(y)] [bind ident(x1) literal(a)]]]]
+% [apply ident(x) ident(y)]]]]}
+
+% {ParseAST [[var ident(x) [var ident(y) [bind ident(x) ident(y)] [bind ident(y) literal(b)]]]]}
 
 
 {Browse '--------------SAS--------------'}
